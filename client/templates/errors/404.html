@@ -1,0 +1,32 @@
+{% extends "_base.html" %} {% block head %}
+
+<style>
+    a:hover {
+        text-decoration: none;
+    }
+</style>
+
+{% endblock %} {% block body %}
+<main style="padding: 20px">
+    <div class="card" style="height: 95vh">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% for
+        category, message in messages %}
+        <div class="flash flash-{{ category }}">
+            <h1>{{ message }} | URL ({{ link }}) not found.</h1>
+        </div>
+        {% endfor %} {% endwith %}
+        <hr />
+        <h3>
+            <p>
+                The requested URL was not found on the server. If you entered
+                the
+            </p>
+            <p>URL manually please check your spelling and try again.</p>
+        </h3>
+
+        <a href="/" class="btn btn-primary" style="margin-top: 10px"
+            >Return Home</a
+        >
+    </div>
+</main>
+{% endblock %}

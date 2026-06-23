@@ -1,0 +1,752 @@
+{% extends "_base.html" %} {% block head %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='libs/highlight/styles/atom-one-dark.min.css') }}"
+/>
+<style>
+    .card-grid {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .table-of-contents {
+        width: 220px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .table-of-contents ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding-left: 0.5rem;
+        margin-top: 0.25rem;
+    }
+
+    .table-of-contents a {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        display: block;
+        padding: 4px 8px;
+        border-radius: var(--radius);
+        transition:
+            background 0.15s,
+            color 0.15s;
+    }
+
+    .table-of-contents a:hover {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+    .table-of-contents a.active {
+        color: var(--accent);
+    }
+
+    .table-of-contents details {
+        margin-top: 0.5rem;
+    }
+
+    .table-of-contents summary {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 4px 8px;
+        cursor: pointer;
+        border-radius: var(--radius);
+        user-select: none;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.15s;
+    }
+
+    .table-of-contents summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .table-of-contents summary:hover {
+        background: var(--bg-secondary);
+    }
+
+    .table-of-contents summary::after {
+        content: "▶";
+        font-size: 0.65rem;
+        transition: transform 0.2s;
+        display: inline-block;
+    }
+
+    .table-of-contents details[open] summary::after {
+        transform: rotate(90deg);
+    }
+
+    .main-content {
+        flex: 1;
+    }
+
+    .main-content h2 {
+        margin-top: 2.5rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 0.5px solid var(--border);
+    }
+
+    .main-content h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+    }
+
+    .main-content p {
+        margin-bottom: 1rem;
+    }
+
+    pre {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem;
+        overflow-x: auto;
+        margin: 0.75rem 0 1.25rem;
+        background: #282c34 !important;
+    }
+
+    pre code.hljs {
+        background: transparent !important;
+        padding: 0 !important;
+        font-size: 0.85rem;
+        font-family: monospace;
+    }
+
+    p code,
+    li code {
+        background: var(--bg-secondary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.82rem;
+        color: var(--accent);
+        font-family: monospace;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+        margin: 0.75rem 0 1.25rem;
+    }
+
+    th {
+        text-align: left;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        border-bottom: 0.5px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    td {
+        padding: 10px 12px;
+        border-bottom: 0.5px solid var(--border);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+    tr:hover td {
+        background: var(--bg-secondary);
+    }
+</style>
+{% endblock %} {% block title %}Docs{% endblock %} {% block body %}
+<main style="padding: 20px">
+    <div class="card-grid">
+        <!-- Table of Contents -->
+        <div class="card table-of-contents">
+            <h2 style="font-size: 0.95rem; margin-bottom: 0.75rem">
+                On this page
+            </h2>
+            <hr style="margin-bottom: 0.75rem" />
+
+            <details open>
+                <summary>Setup</summary>
+                <ul>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#variables">CSS Variables</a></li>
+                </ul>
+            </details>
+
+            <details open>
+                <summary>Components</summary>
+                <ul>
+                    <li><a href="#navbar">Navbar</a></li>
+                    <li><a href="#buttons">Buttons</a></li>
+                    <li><a href="#cards">Cards</a></li>
+                    <li><a href="#forms">Forms</a></li>
+                    <li><a href="#badges">Badges</a></li>
+                    <li><a href="#flash">Flash Messages</a></li>
+                    <li><a href="#tables">Tables</a></li>
+                </ul>
+            </details>
+
+            <details open>
+                <summary>Utilities</summary>
+                <ul>
+                    <li><a href="#utilities">Utility Classes</a></li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- Main Content -->
+        <div class="card main-content">
+            <h1>Dark Minimal CSS Theme</h1>
+            <p>A clean, dark theme for my Flask project.</p>
+            <hr />
+
+            <h2 id="installation">Installation</h2>
+            <p>
+                Drop <code>style.css</code> into <code>static/css/</code> and
+                link it in your base template:
+            </p>
+            <pre><code class="language-html">&lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;</code></pre>
+
+            <h2 id="variables">CSS Variables</h2>
+            <p>Customize the theme by editing these in <code>:root</code>:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Default</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>--bg</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #0f0f0f;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#0f0f0f</code>
+                            </div>
+                        </td>
+                        <td>Main background</td>
+                    </tr>
+                    <tr>
+                        <td><code>--bg-secondary</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #1a1a1a;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#1a1a1a</code>
+                            </div>
+                        </td>
+                        <td>Subtle surfaces</td>
+                    </tr>
+                    <tr>
+                        <td><code>--bg-card</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #141414;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#141414</code>
+                            </div>
+                        </td>
+                        <td>Card background</td>
+                    </tr>
+                    <tr>
+                        <td><code>--border</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #2a2a2a;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#2a2a2a</code>
+                            </div>
+                        </td>
+                        <td>Border color</td>
+                    </tr>
+                    <tr>
+                        <td><code>--text-primary</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #e8e8e8;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#e8e8e8</code>
+                            </div>
+                        </td>
+                        <td>Main text</td>
+                    </tr>
+                    <tr>
+                        <td><code>--text-secondary</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #888;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#888</code>
+                            </div>
+                        </td>
+                        <td>Muted text</td>
+                    </tr>
+                    <tr>
+                        <td><code>--accent</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #7f77dd;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#7f77dd</code>
+                            </div>
+                        </td>
+                        <td>Purple accent</td>
+                    </tr>
+                    <tr>
+                        <td><code>--danger</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #e24b4a;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#e24b4a</code>
+                            </div>
+                        </td>
+                        <td>Red</td>
+                    </tr>
+                    <tr>
+                        <td><code>--success</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #1d9e75;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#1d9e75</code>
+                            </div>
+                        </td>
+                        <td>Green</td>
+                    </tr>
+                    <tr>
+                        <td><code>--warning</code></td>
+                        <td>
+                            <div
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                "
+                            >
+                                <span
+                                    style="
+                                        display: inline-block;
+                                        width: 16px;
+                                        height: 16px;
+                                        background: #ef9f27;
+                                        border-radius: 4px;
+                                        border: 0.5px solid var(--border);
+                                    "
+                                ></span>
+                                <code>#ef9f27</code>
+                            </div>
+                        </td>
+                        <td>Amber</td>
+                    </tr>
+                    <tr>
+                        <td><code>--radius</code></td>
+                        <td><code>8px</code></td>
+                        <td>Border radius</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="navbar">Navbar</h2>
+            <pre><code class="language-html">&lt;nav&gt;
+    &lt;span class="nav-brand"&gt;myapp&lt;/span&gt;
+    &lt;ul class="nav-links"&gt;
+        &lt;li&gt;&lt;a href="/" class="active"&gt;home&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="/about"&gt;about&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+                <nav>
+                    <span class="nav-brand">myapp</span>
+                    <ul class="nav-links">
+                        <li><a href="#navbar" class="active">home</a></li>
+                        <li><a href="#navbar">about</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <h2 id="buttons">Buttons</h2>
+            <pre><code class="language-html">&lt;button class="btn btn-primary"&gt;Primary&lt;/button&gt;
+&lt;button class="btn btn-secondary"&gt;Secondary&lt;/button&gt;
+&lt;button class="btn btn-ghost"&gt;Ghost&lt;/button&gt;
+&lt;button class="btn btn-danger"&gt;Delete&lt;/button&gt;</code></pre>
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+                <button class="btn btn-primary">Primary</button>
+                <button class="btn btn-secondary">Secondary</button>
+                <button class="btn btn-ghost">Ghost</button>
+                <button class="btn btn-danger">Delete</button>
+            </div>
+
+            <h2 id="cards">Cards</h2>
+            <pre><code class="language-html">&lt;div class="card-grid"&gt;
+    &lt;div class="card"&gt;
+        &lt;h3&gt;Title&lt;/h3&gt;
+        &lt;p&gt;Some content here.&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>Title</h3>
+                        <p>Some content here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="forms">Forms</h2>
+            <pre><code class="language-html">&lt;form&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label&gt;Email&lt;/label&gt;
+        &lt;input type="email" placeholder="you@example.com"&gt;
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+        &lt;label&gt;Message&lt;/label&gt;
+        &lt;textarea rows="4" placeholder="Your message..."&gt;&lt;/textarea&gt;
+    &lt;/div&gt;
+    &lt;button class="btn btn-primary"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+                <form>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea
+                            rows="4"
+                            placeholder="Your message..."
+                        ></textarea>
+                    </div>
+                    <button class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+
+            <h2 id="badges">Badges</h2>
+            <pre><code class="language-html">&lt;span class="badge badge-success"&gt;done&lt;/span&gt;
+&lt;span class="badge badge-danger"&gt;error&lt;/span&gt;
+&lt;span class="badge badge-warning"&gt;pending&lt;/span&gt;
+&lt;span class="badge badge-info"&gt;in review&lt;/span&gt;</code></pre>
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+                <span class="badge badge-success">done</span>
+                <span class="badge badge-danger">error</span>
+                <span class="badge badge-warning">pending</span>
+                <span class="badge badge-info">in review</span>
+            </div>
+
+            <h2 id="flash">Flash Messages</h2>
+            <p>In your Flask route:</p>
+            <pre><code class="language-python">from flask import flash
+
+flash("Saved successfully!", "success")
+flash("Something went wrong.", "error")</code></pre>
+            <p>In your Jinja template:</p>
+            <pre><code class="language-html">{% raw %}{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        &lt;div class="flash flash-{{ category }}"&gt;{{ message }}&lt;/div&gt;
+    {% endfor %}
+{% endwith %}{% endraw %}</code></pre>
+
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %} {% endwith %}
+            </div>
+
+            <h2 id="tables">Tables</h2>
+            <pre><code class="language-html">&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Name&lt;/th&gt;
+            &lt;th&gt;Status&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Project Alpha&lt;/td&gt;
+            &lt;td&gt;&lt;span class="badge badge-success"&gt;done&lt;/span&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+            <div class="card">
+                <h3 style="margin-top: 0px !important">Output:</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Project Alpha</td>
+                            <td>
+                                <span class="badge badge-success">done</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 id="utilities">Utility Classes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>text-muted</code></td>
+                        <td>Secondary text color</td>
+                    </tr>
+                    <tr>
+                        <td><code>text-accent</code></td>
+                        <td>Purple accent color</td>
+                    </tr>
+                    <tr>
+                        <td><code>text-success</code></td>
+                        <td>Green text</td>
+                    </tr>
+                    <tr>
+                        <td><code>text-danger</code></td>
+                        <td>Red text</td>
+                    </tr>
+                    <tr>
+                        <td><code>text-warning</code></td>
+                        <td>Amber text</td>
+                    </tr>
+                    <tr>
+                        <td><code>mt-1</code> to <code>mt-4</code></td>
+                        <td>Margin top (0.5rem to 2rem)</td>
+                    </tr>
+                    <tr>
+                        <td><code>flex</code></td>
+                        <td>display: flex</td>
+                    </tr>
+                    <tr>
+                        <td><code>flex-center</code></td>
+                        <td>Centered flex</td>
+                    </tr>
+                    <tr>
+                        <td><code>gap-1</code> / <code>gap-2</code></td>
+                        <td>Flex/grid gap</td>
+                    </tr>
+                    <tr>
+                        <td><code>container</code></td>
+                        <td>Centered max-width wrapper</td>
+                    </tr>
+                    <tr>
+                        <td><code>section</code></td>
+                        <td>Vertical padding block</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script src="{{ url_for('static', filename='libs/highlight/highlight.min.js') }}"></script>
+<script>
+    hljs.highlightAll();
+
+    document.querySelectorAll("details").forEach((el) => {
+        const summary = el.querySelector("summary");
+        const content = el.querySelector("ul");
+
+        content.style.overflow = "hidden";
+        content.style.transition = "height 0.25s ease, opacity 0.25s ease";
+
+        if (el.open) {
+            content.style.height = "auto";
+            content.style.opacity = "1";
+        } else {
+            content.style.height = "0px";
+            content.style.opacity = "0";
+        }
+
+        summary.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            if (el.open) {
+                content.style.height = content.scrollHeight + "px";
+                requestAnimationFrame(() => {
+                    content.style.height = "0px";
+                    content.style.opacity = "0";
+                });
+                content.addEventListener(
+                    "transitionend",
+                    () => {
+                        el.removeAttribute("open");
+                    },
+                    { once: true },
+                );
+            } else {
+                el.setAttribute("open", "");
+                content.style.height = "0px";
+                content.style.opacity = "0";
+                requestAnimationFrame(() => {
+                    content.style.height = content.scrollHeight + "px";
+                    content.style.opacity = "1";
+                });
+                content.addEventListener(
+                    "transitionend",
+                    () => {
+                        content.style.height = "auto";
+                    },
+                    { once: true },
+                );
+            }
+        });
+    });
+</script>
+{% endblock %}
