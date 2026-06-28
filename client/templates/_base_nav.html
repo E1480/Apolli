@@ -1,0 +1,17 @@
+{% extends "_base.html" %} {% block nav %}
+
+<nav>
+    <span class="nav-brand">Apolli tools</span>
+    <ul class="nav-links">
+        <li>
+            <a href="/" class="{% block home_active %}{% endblock %}">Home</a>
+        </li>
+        <li>
+            <a href="/about" class="{% block about_active %}{% endblock %}"
+                >About</a
+            >
+        </li>
+    </ul>
+</nav>
+
+{% endblock %}

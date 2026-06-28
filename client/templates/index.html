@@ -1,15 +1,14 @@
-{% extends "_base.html" %} {% block head %} {% endblock%} {% block title %}
-Hello There! {% endblock %} {% block body %}
+{% extends "_base_nav.html" %} {% block head %} {% endblock%} {% block title %}
+Hello There! {% endblock %} {% block home_active %} active {% endblock %} {%
+block body %}
 
 <main style="padding: 20px">
-    <div class="card">
-        <h1>Test</h1>
-        <span class="badge badge-warning">Warning</span>
-        <span class="badge badge-info">Info</span>
-        <span class="badge badge-danger">Danger</span>
-        <span class="badge badge-success">Success</span>
-        <hr />
-        <p>Hello</p>
+    <div class="card" style="min-height: 85vh">
+        <div class="card-grid">
+            <a href="fileconvert" class="btn card btn-secondary no-decoration"
+                >File converter</a
+            >
+        </div>
     </div>
 </main>
 {% endblock %}

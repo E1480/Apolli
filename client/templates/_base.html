@@ -7,10 +7,12 @@
             rel="stylesheet"
             href="{{ url_for('static', filename='css/style.css') }}"
         />
-        {% block head%} {% endblock %}
-        <title>Apollo | {% block title %} {% endblock %}</title>
+        {% block head %} {% endblock %}
+        <title>Apolli {% block title %} {% endblock %}</title>
     </head>
     <body>
-        {% block body%}{% endblock %}
+        {% block nav %} {% endblock %}
+        <main>{% block body %}{% endblock %}</main>
+        {% block end %} {% endblock %}
     </body>
 </html>

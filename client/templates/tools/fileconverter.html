@@ -1,0 +1,363 @@
+{% extends "tools/_tools.base.html"%} {% block head %}
+<style>
+    body {
+        overflow-x: hidden !important;
+    }
+    .format-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    .format-option {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        cursor: pointer;
+        transition: 0.15s;
+        user-select: none;
+    }
+
+    .format-option:hover {
+        border-color: var(--accent);
+    }
+
+    .format-option input {
+        display: none;
+    }
+
+    .format-option span {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .format-option input:checked + span {
+        color: white;
+    }
+
+    .format-option:has(input:checked) {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .dropzone {
+        border: 1.5px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        text-align: center;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition:
+            border-color 0.15s,
+            background 0.15s;
+    }
+
+    .dropzone.dragover {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    @keyframes slideOut {
+        from { transform: translateX(0);    opacity: 1; }
+        to   { transform: translateX(100%); opacity: 0; }
+    }
+
+    .slide-in  { animation: slideIn  0.25s ease forwards; }
+    .slide-out { animation: slideOut 0.25s ease forwards; }
+
+    .progress {
+        width: 100%;
+        height: 6px;
+        background: var(--border);
+        border-radius: 99px;
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 99px;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %} {% set tool_name = "| File Converter" %} {% block body %}
+<div class="card" style="align-items: center">
+    <h1>Converter</h1>
+    <div class="card-grid">
+        <div class="card">
+            <h4>
+                From:
+                <span style="text-decoration: underline" id="showfiletype"></span>
+            </h4>
+            <hr style="margin-top: 10px; margin-bottom: 10px" />
+            <div class="dropzone" id="dropzone">
+                <p id="dropzone-text">
+                    Drag & drop a file here or
+                    <label for="file">browse</label>
+                </p>
+                <input type="file" id="file" name="file" hidden />
+            </div>
+            <div class="card hidden" style="margin: 0px; margin-top: 5px" id="fileinforamtion">
+                <h4>File Information:</h4>
+                <hr class="mt-1" />
+                <div class="card-grid mt-1">
+                    <div>
+                        <h5>File size:</h5>
+                        <span id="filesize">200 Mb</span>
+                    </div>
+                    <div>
+                        <h5>Last Modified:</h5>
+                        <span id="lastmodfied">Lorem</span>
+                        <br />
+                        <span id="lastmodfieddate">Lorem Ipsum</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h4>To:</h4>
+            <hr style="margin-top: 10px; margin-bottom: 10px" />
+            <input
+                type="text"
+                id="format-search"
+                placeholder="Search format..."
+                onkeyup="filterFormats()"
+                style="margin-bottom: 20px"
+            />
+            <div class="format-grid form-group" id="format-grid"></div>
+        </div>
+    </div>
+
+    <button
+        id="convert-btn"
+        class="btn btn-primary"
+        style="width: 20%; display: block; align-self: center; place-self: center;"
+    >
+        Convert
+    </button>
+
+    <div class="progress hidden" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div
+        class="flash flash-{{ category }} mt-3 text-center"
+        style="font-size: 1rem; font-weight: 700"
+        id="flasher"
+    >
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+</div>
+{% endblock %} {% block end %}
+<script>
+    // ── Elements ──
+    const dropzone         = document.getElementById("dropzone");
+    const dropzonetext     = document.getElementById("dropzone-text");
+    const fileInput        = document.getElementById("file");
+    const showfiletype     = document.getElementById("showfiletype");
+    const formatGrid       = document.getElementById("format-grid");
+    const fileinformation  = document.getElementById("fileinforamtion");
+    const filesize         = document.getElementById("filesize");
+    const lastmodfied      = document.getElementById("lastmodfied");
+    const lastmodfieddate  = document.getElementById("lastmodfieddate");
+    const progressContainer = document.getElementById("progress-container");
+    const progressBar      = document.getElementById("progress-bar");
+    const convertBtn       = document.getElementById("convert-btn");
+    const flasher          = document.getElementById("flasher");
+
+    const fileDict = {{ fileDict | tojson }};
+
+    let currentFile = null; // store file globally
+
+    // ── Flash animation ──
+    if (flasher) {
+        flasher.classList.add("slide-in");
+        flasher.addEventListener("animationend", () => {
+            flasher.classList.remove("slide-in");
+        }, { once: true });
+        setTimeout(() => {
+            flasher.classList.add("slide-out");
+            flasher.addEventListener("animationend", () => {
+                flasher.classList.remove("slide-out");
+                flasher.classList.add("hidden");
+            }, { once: true });
+        }, 5000);
+    }
+
+    // ── Helpers ──
+    function truncateFilename(name, maxLength = 20) {
+        if (name.length <= maxLength) return name;
+        const ext = name.split(".").slice(1).join(".");
+        const base = name.slice(0, name.lastIndexOf("."));
+        const truncated = base.slice(0, maxLength - ext.length - 3);
+        return truncated + "..." + ext;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + " KB";
+        if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + " MB";
+        return (bytes / 1024 ** 3).toFixed(1) + " GB";
+    }
+
+    function filterFormats() {
+        const search = document.getElementById("format-search").value.toLowerCase();
+        document.querySelectorAll(".format-option").forEach((format) => {
+            format.style.display = format.textContent.toLowerCase().includes(search) ? "flex" : "none";
+        });
+    }
+
+    // ── File handling ──
+    function verifyFileMIME(file) {
+        const ext = file.name.split(".").pop().toLowerCase();
+        const category = Object.entries(fileDict).find(([cat, exts]) => exts.includes(ext))?.[0];
+        showfiletype.innerHTML = ext.toUpperCase();
+
+        formatGrid.innerHTML = "";
+        if (!category) return;
+
+        // store category on the button for later
+        convertBtn.dataset.category = category;
+
+        for (const item of fileDict[category]) {
+            if (item === ext) continue;
+            const node = document.createElement("label");
+            node.className = "format-option";
+
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = "format";
+            input.value = item;
+
+            const span = document.createElement("span");
+            span.textContent = item.toUpperCase();
+
+            node.appendChild(input);
+            node.appendChild(span);
+            formatGrid.appendChild(node);
+        }
+    }
+
+    function getfileinfo(file) {
+        fileinformation.classList.remove("hidden");
+        filesize.textContent = formatFileSize(file.size);
+        lastmodfied.textContent = file.lastModified;
+        lastmodfieddate.textContent = file.lastModifiedDate.toString();
+    }
+
+    function handleFile(file) {
+        currentFile = file;
+        dropzonetext.innerHTML = "File: <strong>" + truncateFilename(file.name) + "</strong>";
+        getfileinfo(file);
+        verifyFileMIME(file);
+    }
+
+    // ── Dropzone events ──
+    dropzone.addEventListener("click", (e) => {
+        if (e.target === dropzone || e.target === dropzonetext) fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+        dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    // ── Conversion ──
+    convertBtn.addEventListener("click", async () => {
+        const format = document.querySelector('input[name="format"]:checked');
+        const category = convertBtn.dataset.category;
+
+        if (!currentFile) { alert("Please select a file!"); return; }
+        if (!format) { alert("Please select a format!"); return; }
+
+        // show progress
+        progressContainer.classList.remove("hidden");
+        progressBar.style.width = "0%";
+        convertBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("file", currentFile);
+        formData.append("format", format.value);
+        formData.append("category", category);
+
+        const res = await fetch("/fileconvert", {
+            method: "POST",
+            body: formData
+        });
+        const { job_id } = await res.json();
+
+        // fake progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            if (progress < 90) {
+                progress += 5;
+                progressBar.style.width = progress + "%";
+            }
+        }, 300);
+
+        // poll status
+        const poll = setInterval(async () => {
+            const statusRes = await fetch(`/fileconvert/status/${job_id}`);
+            const { status } = await statusRes.json();
+
+
+            if (status === "done") {
+                clearInterval(poll);
+                clearInterval(interval);
+                progressBar.style.width = "100%";
+                convertBtn.disabled = false;
+
+                // trigger download
+                const a = document.createElement("a");
+                a.href = `/fileconvert/download/${job_id}`;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => {
+                    progressContainer.classList.add("hidden");
+                    progressBar.style.width = "0%";
+                }, 1000);
+
+            } else if (status === "error") {
+                clearInterval(poll);
+                clearInterval(interval);
+                progressBar.style.width = "0%";
+                progressContainer.classList.add("hidden");
+                convertBtn.disabled = false;
+                alert("Conversion failed!");
+            }
+        }, 500);
+    });
+</script>
+{% endblock %}
