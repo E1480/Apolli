@@ -13,7 +13,6 @@
     "pgm",
     "pbm",
     "dds",
-    "svg",
     "heic",
     "avif"
   ],
@@ -33,31 +32,8 @@
     "mts",
     "m2ts"
   ],
-  "Audio": [
-    "mp3",
-    "wav",
-    "ogg",
-    "flac",
-    "aac",
-    "m4a",
-    "wma",
-    "opus",
-    "aiff",
-    "amr"
-  ],
-  "Documents": [
-    "pdf",
-    "doc",
-    "docx",
-    "odt",
-    "rtf",
-    "txt",
-    "html",
-    "md",
-    "epub"
-  ],
+  "Audio": ["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma", "opus", "aiff"],
+  "Documents": ["doc", "docx", "odt", "rtf", "txt", "html", "md", "epub"],
   "Spreadsheet": ["xls", "xlsx", "ods", "csv", "tsv"],
-  "Presentation": ["ppt", "pptx", "odp"],
-  "Ebook": ["epub", "mobi", "azw3", "fb2", "lit", "pdf"],
-  "Archive": ["zip", "rar", "7z", "tar", "gz", "bz2", "xz"]
+  "Ebook": ["epub", "mobi", "azw3", "fb2", "lit"]
 }
