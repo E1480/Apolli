@@ -27,72 +27,71 @@ class FileTypes(Enum):
 # document to PDF.
 
 
-def VideoConverter(file: str, format: str) -> str:
-    ffmpeg.input(file).output(output_path).run()
-    return os.path.abspath(output_path)
+# I might be able to turn this into a package 👀
+class FilesConverter:
+    def __init__(self, file: str, format: str) -> None:
+        self.file = file
+        self.format = format
+        self.output_path = os.path.splitext(file)[0] + "." + format
+        self.absoutput = os.path.abspath(self.output_path)
 
+    def VideoConverter(self) -> str:
+        ffmpeg.input(self.file).output(self.output_path).run()
+        return self.absoutput
 
-def ImageConverter(file: str, format: str) -> str:
-    img = Image.open(os.path.abspath(file))
-    if format in ["jpg", "jpeg"]:
-        img.convert("RGB").save(os.path.abspath(output_path), "JPEG")
-    else:
-        img.save(os.path.abspath(output_path))
+    def ImageConverter(self) -> str:
+        img = Image.open(os.path.abspath(self.file))
+        if self.format in ["jpg", "jpeg"]:
+            img.convert("RGB").save(self.absoutput, "JPEG")
+        else:
+            img.save(os.path.abspath(self.absoutput))
 
-    return os.path.abspath(output_path)
+        return os.path.abspath(self.absoutput)
 
+    def AudioConverter(self) -> str:
+        audio = AudioSegment.from_file(self.file)
 
-def AudioConverter(file: str, format: str) -> str:
-    audio = AudioSegment.from_file(os.path.abspath(file))
+        # pydub uses different format names for some containers
+        # Welp that's what I get for being lazy
+        fmt_map = {
+            "m4a": "ipod",
+            "mp3": "mp3",
+            "ogg": "ogg",
+            "flac": "flac",
+            "wav": "wav",
+            "aac": "adts",
+            "opus": "opus",
+            "wma": "asf",  # as fuuuu!
+        }
 
-    # pydub uses different format names for some containers
-    # Welp that's what I get for being lazy
-    fmt_map = {
-        "m4a": "ipod",
-        "mp3": "mp3",
-        "ogg": "ogg",
-        "flac": "flac",
-        "wav": "wav",
-        "aac": "adts",
-        "opus": "opus",
-        "wma": "asf",  # as fuuuu!
-    }
+        export_format = fmt_map.get(self.format, self.format)
+        audio.export(self.output_path, format=export_format)
+        return self.absoutput
 
-    export_format = fmt_map.get(format, format)
-    audio.export(output_path, format=export_format)
-    return os.path.abspath(output_path)
+    def DocumentConverter(self) -> str:
+        pypandoc.convert_file(self.absoutput, self.format, outputfile=self.absoutput)
+        return self.absoutput
 
+    def SpreadSheetsConverter(self) -> str:
+        ...
+        # return os.path.abspath(output_path)
 
-def DocumentConverter(file: str, format: str) -> str:
-    pypandoc.convert_file(
-        os.path.abspath(file), format, outputfile=os.path.abspath(output_path)
-    )
-
-    return os.path.abspath(output_path)
-
-
-def SpreadSheetsConverter(file: str, format: str) -> str:
-    ...
-    # return os.path.abspath(output_path)
-
-
-def EbookConverter(file: str, format: str) -> str:
-    ...
-    # return os.path.abspath(output_path)
+    def EbookConverter(self) -> str:
+        ...
+        # return os.path.abspath(output_path)
 
 
 def Convert(file: str, format: Any, type: Any | FileTypes) -> str:
 
-    global output_path  # Idk why I did this, but it works
-    output_path = os.path.splitext(file)[0] + "." + format
+    c = FilesConverter(file, format)
 
     if type == FileTypes.Videos.name:
-        return VideoConverter(file, format)
+        return c.VideoConverter()
     if type == FileTypes.Images.name:
-        return ImageConverter(file, format)
+        return c.ImageConverter()
     if type == FileTypes.Audio.name:
-        return AudioConverter(file, format)
+        return c.AudioConverter()
     if type == FileTypes.Documents.name:
-        return DocumentConverter(file, format)
+        return c.DocumentConverter()
 
     return ""

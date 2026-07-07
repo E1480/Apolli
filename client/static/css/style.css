@@ -151,6 +151,12 @@ nav {
     color: #fff;
 }
 
+.btn:disabled {
+    background-color: var(--accent-dim);
+    cursor: default;
+    transition: none !important;
+}
+
 /* ── Cards ── */
 .card {
     background: var(--bg-card);
